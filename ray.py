@@ -12,15 +12,21 @@ class ray:
 
 def hit_sphere(center: vec3, radius: float, r: ray):
     oc = center - r.origin
-    a = dot(r.direction, r.direction)
-    b = 2.0 * dot(oc, r.direction)
-    c = dot(oc, oc) - radius * radius
-    discriminant = b * b - 4 * a * c
-    return discriminant >= 0
+    a = r.direction.squared_length()
+    h = dot(oc, r.direction)
+    c = oc.squared_length() - radius * radius
+    discriminant = h * h - a * c
+    if discriminant < 0:
+        return -1.0
+    else:
+        return (h - discriminant ** 0.5) / a
 
 def ray_color(r: ray):
-    if hit_sphere(vec3(0, 0, -1), 0.5, r):
-        return color(1, 0, 0)
+    t = hit_sphere(vec3(0, 0, -1), 0.5, r)
+    if t > 0:
+        N = unit_vector(r.at(t) - vec3(0, 0, -1))
+        return 0.5 * color(N.x + 1, N.y + 1, N.z + 1)
+    
     unit_direction = unit_vector(r.direction)
     a = 0.5 * (unit_direction.y + 1.0)
     return (1.0-a) * vec3(1.0, 1.0, 1.0) + a * vec3(0.5, 0.7, 1.0)
